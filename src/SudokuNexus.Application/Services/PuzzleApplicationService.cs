@@ -162,38 +162,38 @@ public sealed class PuzzleApplicationService
     }
 
     /// <summary>
-    /// Curated real-world test boards so you can immediately test specific logical techniques in the UI.
+    /// Curated real-world test boards showcasing specific logical deduction techniques.
     /// </summary>
     public static IReadOnlyList<CuratedPresetDto> GetCuratedPresets() =>
     [
         new(
             "easy-singles",
             "Classic Warmup (Naked Singles)",
-            "Solvable entirely using Naked Singles (Module 3.1)",
+            "Solvable entirely using Naked Singles",
             DifficultyRating.Easy,
             "530070000600195000098000060800060003400803001700020006060000280000419005000080079"),
         new(
             "medium-hidden",
             "Hidden Corridor (Hidden Singles)",
-            "Requires spotting Hidden Singles in Boxes & Lines (Module 3.2)",
+            "Requires spotting Hidden Singles in Boxes & Lines",
             DifficultyRating.Medium,
             "000260701680070090190004500820100040004602900050003028009300074040050036703018000"),
         new(
             "hard-pairs",
             "Intersection & Pairs",
-            "Tests Pointing Pairs and Naked Pairs candidate elimination (Module 3.3)",
+            "Tests Pointing Pairs and Naked Pairs candidate elimination",
             DifficultyRating.Hard,
             "000000907000420180000705026100904000050000040000507009920108000034059000507000000"),
         new(
             "expert-xwing",
             "Crosswind (X-Wing Showcase)",
-            "Features a clean X-Wing pattern to unlock the board (Module 3.4)",
+            "Features a clean X-Wing pattern to unlock the board",
             DifficultyRating.Expert,
             "100000569492056108056109240009640801064010000218035604040500016905061402621000005"),
         new(
             "inkala-escargot",
             "AI Escargot (Arto Inkala)",
-            "One of the hardest known 9x9 Sudokus — stress-tests DLX Exact Cover (Module 2)",
+            "One of the hardest known 9x9 Sudokus — stress-tests DLX Exact Cover",
             DifficultyRating.Extreme,
             "100007090030020008009600500005300900010080002600004000300000010040000007007000300")
     ];

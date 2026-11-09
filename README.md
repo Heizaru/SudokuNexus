@@ -1,23 +1,38 @@
 # SudokuNexus
 
-**SudokuNexus** is a .NET 10 backend engine for solving, grading, and generating Sudoku puzzles. Primarily used for learning .NET in an actual project and wanting to know how to solve sudokus programatically.
-It contains an Exact Cover solver with a Strategy-Pattern Human Logical Grader capable of explaining every step from *Naked Singles* to *X-Wings*.
+**SudokuNexus** is a .NET 10 Sudoku solver, logical grader, and symmetric puzzle generator with an interactive web UI.
+
+It combines Donald Knuth's **Algorithm X (Dancing Links)** for fast exact-cover solving and uniqueness verification with a **Human Logical Grader** that solves boards step-by-step using human deduction strategies (*Naked Singles*, *Hidden Singles*, *Pointing Pairs*, *Naked Pairs*, and *X-Wings*).
+
 ---
 
-## Architecture 
+## Features
 
-- **`SudokuNexus.Domain`**: Core containing value objects (`CellCoordinate`), primitivesandlookup tables (`SudokuTopology`)
-- **`SudokuNexus.Engine`**: Stateless algorithmic tier housing Donald Knuth's **Dancing Links (`DlxSolver`)**, extensible human deduction strategies (`IDeductionStrategy`), `HumanLogicalGrader`, and a rotationally symmetric `PuzzleGenerator`.
-- **`SudokuNexus.Api`**: **ASP.NET Core 10 Minimal APIs**, RFC 7807 `ProblemDetails` global exception handling (`IExceptionHandler`), OpenAPI specification, and a zero-dependency interactive web workbench (`wwwroot`).
-- **`SudokuNexus.Application`**: Use-case orchestration (`PuzzleApplicationService`), DTO mapping, and producer/consumer queue contracts (`IPuzzleGenerationQueue`).
-- **`SudokuNexus.Infrastructure`**: **EF Core 10 (SQLite)** persistence (`SudokuDbContext`, `EfPuzzleRepository`) and an asynchronous `BackgroundService` worker (`PuzzlePoolBackgroundWorker`) powered by `System.Threading.Channels.Channel<T>`.
+- **Bitmask Candidate Tracking**: Uses `ushort` bitmasks and `System.Numerics.BitOperations` hardware intrinsics (`PopCount`, `TrailingZeroCount`, `LeadingZeroCount`) for candidate manipulation and constraint propagation.
+- **Algorithm X / Dancing Links (`DlxSolver`)**: Maps 9x9 Sudoku to a 729x324 toroidal doubly-linked list with the minimum-size column heuristic (S-Heuristic) to solve boards and verify solution uniqueness in microseconds.
+- **Human-Style Logical Grader (`HumanLogicalGrader`)**: Applies extensible `IDeductionStrategy` implementations ordered by difficulty weight to generate step-by-step solve traces and difficulty ratings.
+- **Symmetric Puzzle Generator (`PuzzleGenerator`)**: Seeds independent diagonal boxes, solves the full grid via DLX, and removes clues in 180-degree rotationally symmetric pairs while preserving a unique solution.
+- **Background Pool Replenishment**: Uses `System.Threading.Channels` and a `BackgroundService` worker (`PuzzlePoolBackgroundWorker`) with EF Core 10 + SQLite to maintain a warm pool of pre-generated puzzles per difficulty tier.
+- **Interactive Web UI**: Built-in frontend (`wwwroot`) for inspecting candidate pencil marks, stepping through logical hints, running full grading traces, and generating new puzzles.
+
+---
+
+## Project Structure
+
+- **`src/SudokuNexus.Domain`**: Core domain models (`Board`, `SudokuTopology`, `SolveStep`), bitmask primitives (`CandidateMask`, `CellCoordinate`), and `Result<T>`.
+- **`src/SudokuNexus.Engine`**: Stateless algorithmic solver (`DlxSolver`), logical deduction strategies (`IDeductionStrategy`), `HumanLogicalGrader`, and `PuzzleGenerator`.
+- **`src/SudokuNexus.Application`**: Application service (`PuzzleApplicationService`), DTO contracts, and repository/queue abstractions.
+- **`src/SudokuNexus.Infrastructure`**: EF Core 10 SQLite persistence (`SudokuDbContext`, `EfPuzzleRepository`) and bounded channel background worker (`PuzzlePoolBackgroundWorker`).
+- **`src/SudokuNexus.Api`**: ASP.NET Core 10 Minimal API endpoints, OpenAPI configuration, `ProblemDetails` exception handling, and static web UI.
+- **`tests/SudokuNexus.UnitTests`**: Unit test suite covering bitmask operations, DLX exact cover, logical deduction strategies, symmetric puzzle generation, and background worker persistence.
+- **`benchmarks/SudokuNexus.Benchmarks`**: BenchmarkDotNet suite measuring solver and grader execution times and allocations.
 
 ---
 
 ## Getting Started
 
 ### Prerequisites
-- **.NET 10 SDK** (`10.0.100` or newer)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 
 ### Build & Run Tests
 ```bash
@@ -25,11 +40,11 @@ dotnet build
 dotnet test
 ```
 
-### Run the API 
+### Run the Web UI & API
 ```bash
 dotnet run --project src/SudokuNexus.Api
 ```
-Navigate to the URL shown in the terminal (e.g., `http://localhost:5000`) to open the UI, or inspect `/openapi/v1.json` for the OpenAPI specification.
+Open the URL printed in the console (e.g., `http://localhost:5000`) to launch the interactive Sudoku workbench, or view `/openapi/v1.json` for the OpenAPI specification.
 
 ### Run Benchmarks
 ```bash
@@ -38,14 +53,14 @@ dotnet run -c Release --project benchmarks/SudokuNexus.Benchmarks -- --filter "*
 
 ---
 
-## REST API Endpoints
+## API Endpoints
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `GET` | `/api/puzzles/presets` | Returns test puzzles |
-| `POST` | `/api/puzzles/inspect` | Parses an 81-char puzzle string and computes candidate bitmasks for every cell. |
-| `POST` | `/api/puzzles/solve` | Solves the board via Algorithm X (DLX), verifies solution uniqueness. |
-| `POST` | `/api/puzzles/hint` | Returns the single easiest human logical deduction step (`SolveStep`) available on the board. |
-| `POST` | `/api/puzzles/analyze` | Runs a full human-style logical solve trace and assigns a Sudoku Explainer (SE) difficulty grade. |
-| `GET` | `/api/puzzles/generate?difficulty=Hard` | Fetches a graded puzzle from the warm SQLite pool and signals the background channel to replenish. |
-| `GET` | `/api/puzzles/pool-stats` | Returns the current count of pre-generated puzzles per difficulty tier in SQLite. |
+| `GET` | `/api/puzzles/presets` | Returns curated puzzles for testing different deduction techniques. |
+| `POST` | `/api/puzzles/inspect` | Parses an 81-character puzzle string and returns cell states and candidate masks. |
+| `POST` | `/api/puzzles/solve` | Solves a puzzle via Algorithm X (DLX) and checks solution uniqueness. |
+| `POST` | `/api/puzzles/hint` | Finds the next human logical deduction step (`SolveStep`) for the current board. |
+| `POST` | `/api/puzzles/analyze` | Runs both DLX verification and a full step-by-step logical grading trace. |
+| `GET` | `/api/puzzles/generate?difficulty=Hard` | Fetches a puzzle from the SQLite pool (or generates one) and queues background replenishment. |
+| `GET` | `/api/puzzles/pool-stats` | Returns the number of cached puzzles per difficulty rating in SQLite. |

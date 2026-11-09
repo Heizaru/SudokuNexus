@@ -5,12 +5,7 @@ using Xunit;
 
 namespace SudokuNexus.UnitTests;
 
-/// <summary>
-/// Run these tests while working on Module 1:
-/// <c>dotnet test --filter "Module=1"</c>
-/// </summary>
-[Trait("Module", "1")]
-public sealed class Module1_BitmaskAndBoardTests
+public sealed class BitmaskAndBoardTests
 {
     [Fact]
     public void CandidateMask_All_HasCount9AndContainsAllDigits()
@@ -90,7 +85,6 @@ public sealed class Module1_BitmaskAndBoardTests
     public void Board_IsValid_ReturnsFalseWhenEmptyCellHasZeroCandidates()
     {
         var board = new Board();
-        // Eliminate all 9 candidates from cell 0 while leaving its value as 0
         for (int d = 1; d <= 9; d++)
         {
             board.EliminateCandidate(0, d);

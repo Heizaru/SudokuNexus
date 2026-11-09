@@ -6,17 +6,11 @@ using Xunit;
 
 namespace SudokuNexus.UnitTests;
 
-/// <summary>
-/// Run these tests while working on Module 3:
-/// <c>dotnet test --filter "Module=3"</c>
-/// </summary>
-[Trait("Module", "3")]
-public sealed class Module3_LogicalStrategiesTests
+public sealed class LogicalStrategiesTests
 {
     [Fact]
     public void NakedSingleStrategy_DetectsCellWithOnlyOneCandidate()
     {
-        // Place digits 1..8 in Row 0 (indices 0..7), leaving cell 8 (R1C9) with only candidate 9
         var board = new Board();
         for (int c = 0; c < 8; c++)
         {
@@ -35,10 +29,7 @@ public sealed class Module3_LogicalStrategiesTests
     [Fact]
     public void HiddenSingleStrategy_DetectsUniqueCandidateInHouse()
     {
-        // Construct a board where digit 1 in Box 0 can only go into R1C1 (cell 0),
-        // even though R1C1 still has multiple candidates (e.g., {1, 2, 3}).
         var board = new Board();
-        // Eliminate digit 1 from all other 8 cells of Box 0 (indices 1, 2, 9, 10, 11, 18, 19, 20)
         int[] otherBox0Cells = [1, 2, 9, 10, 11, 18, 19, 20];
         foreach (int idx in otherBox0Cells)
         {
@@ -55,10 +46,28 @@ public sealed class Module3_LogicalStrategiesTests
     }
 
     [Fact]
+    public void HiddenSingleStrategy_IgnoresNonHiddenCandidatesInLastHouse()
+    {
+        var board = new Board();
+        int[] box8Cells = SudokuTopology.BoxIndices[8];
+        for (int i = 0; i < 8; i++)
+        {
+            board.EliminateCandidate(box8Cells[i], 9);
+        }
+
+        var strategy = new HiddenSingleStrategy();
+        SolveStep? step = strategy.FindNextStep(board);
+
+        Assert.NotNull(step);
+        Assert.Equal(TechniqueType.HiddenSingle, step.Technique);
+        Assert.Equal(80, step.PlacedCellIndex);
+        Assert.Equal(9, step.PlacedDigit);
+    }
+
+    [Fact]
     public void NakedPairStrategy_EliminatesPairDigitsFromOtherCellsInRow()
     {
         var board = new Board();
-        // Set R1C1 (cell 0) and R1C2 (cell 1) to only have candidates {4, 7}
         for (int d = 1; d <= 9; d++)
         {
             if (d is not 4 and not 7)
@@ -84,7 +93,6 @@ public sealed class Module3_LogicalStrategiesTests
         var board = new Board();
         const int targetDigit = 5;
 
-        // In Row 1 (r=1) and Row 4 (r=4), restrict digit 5 to ONLY Columns 2 and 6
         foreach (int r in new[] { 1, 4 })
         {
             for (int c = 0; c < 9; c++)

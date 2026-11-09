@@ -16,27 +16,27 @@ public static class PuzzleEndpoints
 
         group.MapGet("/presets", () => Results.Ok(PuzzleApplicationService.GetCuratedPresets()))
             .WithName("GetCuratedPresets")
-            .WithSummary("Returns curated test boards for each learning module (Singles, Pairs, X-Wing, AI Escargot).");
+            .WithSummary("Returns curated test boards (Singles, Pairs, X-Wing, AI Escargot).");
 
         group.MapPost("/inspect", ([FromBody] BoardRequest request, PuzzleApplicationService service) =>
             ToHttpResult(service.ParseAndInspect(request)))
             .WithName("InspectBoard")
-            .WithSummary("Parses an 81-char board string and computes candidate bitmasks for every cell (Module 1).");
+            .WithSummary("Parses an 81-char board string and computes candidate bitmasks for every cell.");
 
         group.MapPost("/solve", ([FromBody] BoardRequest request, PuzzleApplicationService service) =>
             ToHttpResult(service.SolveFast(request)))
             .WithName("SolvePuzzleFast")
-            .WithSummary("Solves a puzzle using Donald Knuth's Algorithm X / Dancing Links and verifies uniqueness (Module 2).");
+            .WithSummary("Solves a puzzle using Donald Knuth's Algorithm X / Dancing Links and verifies uniqueness.");
 
         group.MapPost("/hint", ([FromBody] BoardRequest request, PuzzleApplicationService service) =>
             ToHttpResult(service.GetNextHint(request)))
             .WithName("GetNextHint")
-            .WithSummary("Finds the single easiest human logical deduction step for the current board (Module 3).");
+            .WithSummary("Finds the single easiest human logical deduction step for the current board.");
 
         group.MapPost("/analyze", ([FromBody] BoardRequest request, PuzzleApplicationService service) =>
             ToHttpResult(service.AnalyzePuzzle(request)))
             .WithName("AnalyzePuzzle")
-            .WithSummary("Runs both DLX Exact Cover and the full step-by-step HumanLogicalGrader walkthrough (Modules 2 & 3).");
+            .WithSummary("Runs both DLX Exact Cover and the full step-by-step HumanLogicalGrader.");
 
         group.MapGet("/generate", async (
             [FromQuery] DifficultyRating difficulty,
@@ -47,13 +47,13 @@ public static class PuzzleEndpoints
             return Results.Ok(puzzle);
         })
         .WithName("GeneratePuzzle")
-        .WithSummary("Fetches or generates a rotationally symmetric puzzle with a unique solution (Modules 4 & 5).");
+        .WithSummary("Fetches or generates a rotationally symmetric puzzle with a unique solution.");
 
         group.MapGet("/pool-stats", async (
             IPuzzleRepository repository,
             CancellationToken cancellationToken) =>
         {
-            var stats = await repository.GetPoolStatisticsAsync(cancellationToken);
+            IReadOnlyDictionary<DifficultyRating, int> stats = await repository.GetPoolStatisticsAsync(cancellationToken);
             return Results.Ok(stats);
         })
         .WithName("GetPoolStatistics")

@@ -4,7 +4,7 @@ using SudokuNexus.Application;
 using SudokuNexus.Infrastructure;
 using SudokuNexus.Infrastructure.Persistence;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
@@ -14,7 +14,7 @@ builder.Services.AddSudokuApplication();
 builder.Services.AddSudokuInfrastructure(
     builder.Configuration.GetConnectionString("SudokuDb") ?? "Data Source=sudokunexus.db");
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 // Ensure SQLite database schema is created on startup
 using (IServiceScope scope = app.Services.CreateScope())

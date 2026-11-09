@@ -15,14 +15,9 @@ using Xunit;
 
 namespace SudokuNexus.UnitTests;
 
-/// <summary>
-/// Run these tests while working on Modules 4 &amp; 5:
-/// <c>dotnet test --filter "Module=4|Module=5"</c>
-/// </summary>
-public sealed class Module4And5_GeneratorAndWorkerTests
+public sealed class GeneratorAndWorkerTests
 {
     [Fact]
-    [Trait("Module", "4")]
     public void PuzzleGenerator_GeneratesSymmetricPuzzleWithUniqueSolution()
     {
         var dlx = new DlxSolver();
@@ -42,7 +37,6 @@ public sealed class Module4And5_GeneratorAndWorkerTests
         Assert.True(puzzleBoard.IsValid());
         Assert.Equal(1, dlx.CountSolutions(puzzleBoard, limit: 2));
 
-        // Verify 180-degree rotational symmetry of given clues
         for (int i = 0; i < 81; i++)
         {
             bool hasClueA = puzzleBoard.GetValue(i) != 0;
@@ -52,7 +46,6 @@ public sealed class Module4And5_GeneratorAndWorkerTests
     }
 
     [Fact]
-    [Trait("Module", "5")]
     public async Task PuzzlePoolBackgroundWorker_ProcessGenerationRequest_PersistsToScopedRepository()
     {
         var services = new ServiceCollection();
@@ -63,7 +56,6 @@ public sealed class Module4And5_GeneratorAndWorkerTests
 
         await using ServiceProvider provider = services.BuildServiceProvider();
 
-        // Keep shared in-memory connection open for test lifetime
         await using AsyncServiceScope initScope = provider.CreateAsyncScope();
         var db = initScope.ServiceProvider.GetRequiredService<SudokuDbContext>();
         await db.Database.OpenConnectionAsync();
@@ -81,5 +73,40 @@ public sealed class Module4And5_GeneratorAndWorkerTests
         var repo = initScope.ServiceProvider.GetRequiredService<IPuzzleRepository>();
         int count = await repo.CountByDifficultyAsync(DifficultyRating.Easy);
         Assert.Equal(1, count);
+    }
+
+    [Fact]
+    public async Task PuzzlePoolBackgroundWorker_ProcessGenerationRequest_ReturnsFalseWhenPoolIsFull()
+    {
+        var services = new ServiceCollection();
+        services.AddSudokuApplication();
+        services.AddDbContext<SudokuDbContext>(o => o.UseSqlite("DataSource=file:memdb_worker_full?mode=memory&cache=shared"));
+        services.AddScoped<IPuzzleRepository, EfPuzzleRepository>();
+        services.AddSingleton<IPuzzleGenerationQueue, ChannelPuzzleGenerationQueue>();
+
+        await using ServiceProvider provider = services.BuildServiceProvider();
+
+        await using AsyncServiceScope initScope = provider.CreateAsyncScope();
+        var db = initScope.ServiceProvider.GetRequiredService<SudokuDbContext>();
+        await db.Database.OpenConnectionAsync();
+        await db.Database.EnsureCreatedAsync();
+
+        var worker = new PuzzlePoolBackgroundWorker(
+            provider.GetRequiredService<IPuzzleGenerationQueue>(),
+            provider.GetRequiredService<PuzzleGenerator>(),
+            provider.GetRequiredService<IServiceScopeFactory>(),
+            NullLogger<PuzzlePoolBackgroundWorker>.Instance);
+
+        for (int i = 0; i < PuzzlePoolBackgroundWorker.TargetPoolSizePerDifficulty; i++)
+        {
+            Assert.True(await worker.ProcessGenerationRequestAsync(DifficultyRating.Easy));
+        }
+
+        bool addedWhenFull = await worker.ProcessGenerationRequestAsync(DifficultyRating.Easy);
+        Assert.False(addedWhenFull);
+
+        var repo = initScope.ServiceProvider.GetRequiredService<IPuzzleRepository>();
+        int count = await repo.CountByDifficultyAsync(DifficultyRating.Easy);
+        Assert.Equal(PuzzlePoolBackgroundWorker.TargetPoolSizePerDifficulty, count);
     }
 }

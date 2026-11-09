@@ -43,12 +43,8 @@ async function apiCall(url, options = {}) {
 
     const data = await response.json().catch(() => null);
     if (!response.ok) {
-        if (response.status === 501 && data && data.detail) {
-            setStatus('todo-warning', 'Learning Module Stub Reached (501 Not Implemented)', data.detail);
-        } else {
-            const msg = (data && (data.detail || data.title)) || `HTTP ${response.status}`;
-            setStatus('error', 'API Error', msg);
-        }
+        const msg = (data && (data.detail || data.title)) || `HTTP ${response.status}`;
+        setStatus('error', 'API Error', msg);
         throw new Error('Handled API error');
     }
     return data;
@@ -168,11 +164,10 @@ async function inspectBoard() {
         renderBoardState(dto);
         setStatus(
             dto.isValid ? 'success' : 'error',
-            dto.isSolved ? 'Puzzle Solved!' : 'Board Inspected (Module 1 Verified)',
+            dto.isSolved ? 'Puzzle Solved!' : 'Board Inspected',
             `Filled Cells: ${dto.filledCellCount}/81 | Valid State: ${dto.isValid}`
         );
     } catch {
-        // Fallback so grid still displays raw clues before Module 1.2 is implemented
         renderEmptyGrid(raw);
     }
 }
@@ -193,7 +188,7 @@ async function requestNextHint() {
             setStatus('info', 'No Further Human Hint Available',
                 res.currentBoard.isSolved
                     ? 'The board is already completely solved!'
-                    : 'No registered strategy found a step. Implement more strategies in Module 3!');
+                    : 'No registered strategy found a step for the current board state.');
             els.btnApplyHint.disabled = true;
             return;
         }
@@ -241,7 +236,7 @@ async function solveFastDlx() {
             els.puzzleInput.value = res.solvedBoardString;
             state.appliedEliminations = [];
             renderBoardState(res.solvedBoard);
-            setStatus('success', 'Solved via Algorithm X / Dancing Links (Module 2 Verified)',
+            setStatus('success', 'Solved via Algorithm X / Dancing Links',
                 `Solved in ${res.elapsedMicroseconds} µs. Unique solution: ${res.hasUniqueSolution}.`);
         } else {
             setStatus('error', 'Unsolvable Board', 'Algorithm X determined this puzzle has 0 valid solutions.');
@@ -308,7 +303,7 @@ async function generateNewPuzzle() {
         els.puzzleInput.value = res.puzzleString;
         state.appliedEliminations = [];
         await inspectBoard();
-        setStatus('success', `Generated ${res.difficulty} Puzzle (Module 4 Verified)`,
+        setStatus('success', `Generated ${res.difficulty} Puzzle`,
             `Clues: ${res.givenClueCount}/81 | Max Technique: ${res.maxTechnique}`);
     } catch {
         // Error banner already updated

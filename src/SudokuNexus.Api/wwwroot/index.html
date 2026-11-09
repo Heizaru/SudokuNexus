@@ -29,20 +29,20 @@
 
             <div class="string-bar">
                 <input id="puzzleInput" type="text" maxlength="81" placeholder="Paste 81-char puzzle string (0 or . for empty)..." spellcheck="false" />
-                <button id="btnInspect" class="btn-secondary" title="Parse &amp; Compute Candidate Masks (Module 1)">Inspect Board</button>
+                <button id="btnInspect" class="btn-secondary" title="Parse &amp; Compute Candidate Masks">Inspect Board</button>
             </div>
 
             <div id="sudokuGrid" class="sudoku-grid" aria-label="Sudoku 9x9 Grid"></div>
 
             <div class="action-bar">
-                <button id="btnHint" class="btn-primary">Next Logical Hint (Module 3)</button>
+                <button id="btnHint" class="btn-primary">Next Logical Hint</button>
                 <button id="btnApplyHint" class="btn-accent" disabled>Apply Step</button>
-                <button id="btnSolveDlx" class="btn-secondary">Fast DLX Solve (Module 2)</button>
+                <button id="btnSolveDlx" class="btn-secondary">Fast DLX Solve</button>
                 <button id="btnAnalyze" class="btn-primary">Full Grader Analysis</button>
             </div>
 
             <div class="generator-bar">
-                <span>Generate Symmetric Puzzle (Module 4):</span>
+                <span>Generate Symmetric Puzzle:</span>
                 <select id="genDifficulty">
                     <option value="Easy">Easy</option>
                     <option value="Medium" selected>Medium</option>
@@ -55,9 +55,9 @@
 
         <!-- Right Column: Diagnostics, Hints & Step-by-Step Trace -->
         <section class="diagnostics-panel">
-            <!-- Status / Module Banner -->
+            <!-- Status Banner -->
             <div id="statusBanner" class="status-card info">
-                <h3 id="statusTitle">Ready to Test Your Implementation</h3>
+                <h3 id="statusTitle">Ready</h3>
                 <p id="statusMessage">Select a preset and click <strong>Inspect Board</strong>, <strong>Next Logical Hint</strong>, or <strong>Fast DLX Solve</strong>.</p>
             </div>
 

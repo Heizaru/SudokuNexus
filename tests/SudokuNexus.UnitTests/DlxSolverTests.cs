@@ -4,12 +4,7 @@ using Xunit;
 
 namespace SudokuNexus.UnitTests;
 
-/// <summary>
-/// Run these tests while working on Module 2:
-/// <c>dotnet test --filter "Module=2"</c>
-/// </summary>
-[Trait("Module", "2")]
-public sealed class Module2_DlxSolverTests
+public sealed class DlxSolverTests
 {
     [Fact]
     public void CoverAndUncover_RestoresExactToroidalMatrixState()
@@ -66,7 +61,6 @@ public sealed class Module2_DlxSolverTests
     [Fact]
     public void CountSolutions_UnderConstrainedBoard_DetectsMultipleSolutions()
     {
-        // Almost empty board with only a single clue has many solutions
         string almostEmpty = "1" + new string('.', 80);
         Board board = Board.TryParse(almostEmpty).Value!;
         var solver = new DlxSolver();

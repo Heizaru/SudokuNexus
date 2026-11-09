@@ -10,12 +10,7 @@ using Xunit;
 
 namespace SudokuNexus.UnitTests;
 
-/// <summary>
-/// Verifies that the provided scaffold infrastructure (SudokuTopology, DLX Toroidal Matrix builder,
-/// EF Core SQLite repository, and Bounded Channel queue) works out of the box.
-/// </summary>
-[Trait("Module", "0")]
-public sealed class Module0_ScaffoldInfrastructureTests
+public sealed class InfrastructureAndTopologyTests
 {
     [Fact]
     public void SudokuTopology_EachCellHasExactly20DistinctPeers()
@@ -38,7 +33,7 @@ public sealed class Module0_ScaffoldInfrastructureTests
         Assert.Equal(0, topLeft.Box);
         Assert.Equal("R1C1", topLeft.ToString());
 
-        var center = CellCoordinate.FromRowCol(4, 4);
+        CellCoordinate center = CellCoordinate.FromRowCol(4, 4);
         Assert.Equal(40, center.Index);
         Assert.Equal(4, center.Box);
         Assert.Equal("R5C5", center.ToString());
@@ -64,7 +59,7 @@ public sealed class Module0_ScaffoldInfrastructureTests
     [Fact]
     public async Task EfPuzzleRepository_CanPersistAndQueryPuzzlesInMemorySqlite()
     {
-        var options = new DbContextOptionsBuilder<SudokuDbContext>()
+        DbContextOptions<SudokuDbContext> options = new DbContextOptionsBuilder<SudokuDbContext>()
             .UseSqlite("DataSource=:memory:")
             .Options;
 
