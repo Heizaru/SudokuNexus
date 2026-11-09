@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 namespace SudokuNexus.Domain.Enums;
 
 /// <summary>
-/// Logical deduction techniques supported by the HumanLogicalGrader engine.
+/// Deduction techniques supported by the logical grading engine.
 /// </summary>
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum TechniqueType

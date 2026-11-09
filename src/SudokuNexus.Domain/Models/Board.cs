@@ -6,11 +6,7 @@ using SudokuNexus.Domain.Primitives;
 namespace SudokuNexus.Domain.Models;
 
 /// <summary>
-/// MODULE 1.2: The 9x9 Sudoku Board Domain Model.
-/// 
-/// Maintains two synchronized arrays of length 81:
-/// 1. <c>_values</c>: The placed digit (1..9) in each cell, or 0 if the cell is empty.
-/// 2. <c>_candidates</c>: The <see cref="CandidateMask"/> of remaining valid digits for each cell.
+/// Represents a 9x9 Sudoku board, maintaining placed values and candidate bitmasks for all 81 cells.
 /// </summary>
 public sealed class Board
 {
@@ -31,7 +27,7 @@ public sealed class Board
     }
 
     /// <summary>
-    /// Creates a deep copy of the board (useful for backtracking or hypothetical "what-if" checks).
+    /// Creates a deep copy of the board.
     /// </summary>
     public Board Clone() => new(_values, _candidates, _isGiven);
 
@@ -82,12 +78,14 @@ public sealed class Board
         ArgumentOutOfRangeException.ThrowIfLessThan(digit, 1);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(digit, 9);
 
-        // TODO [Module 1.2]:
-        // 1. Set `_values[cellIndex] = digit` and `_isGiven[cellIndex] = isInitialClue`.
-        // 2. Clear `_candidates[cellIndex] = CandidateMask.Empty` (since the cell now has a value).
-        // 3. Iterate over all 20 peers in `SudokuTopology.Peers[cellIndex]` and remove `digit`
-        //    from each peer's `_candidates` using `WithoutCandidate(digit)`.
-        throw new NotImplementedException("TODO [Module 1.2]: Implement Board.PlaceDigit and peer candidate elimination.");
+        _values[cellIndex] = digit;
+        _isGiven[cellIndex] = isInitialClue;
+        _candidates[cellIndex] = CandidateMask.Empty;
+
+        foreach (int peer in SudokuTopology.Peers[cellIndex])
+        {
+            _candidates[peer] = _candidates[peer].WithoutCandidate(digit);
+        }
     }
 
     /// <summary>
@@ -131,14 +129,57 @@ public sealed class Board
     /// </summary>
     public bool IsValid()
     {
-        // TODO [Module 1.2]:
-        // 1. Check all 9 Rows, 9 Columns, and 9 Boxes (use `SudokuTopology.RowIndices`, `ColumnIndices`, `BoxIndices`).
-        //    Tip: You can track seen digits in a House using a bitmask `ushort seen = 0;`!
-        //    If a non-zero digit `d` is already set in `seen`, return `false`.
-        // 2. Check all 81 cells: if `_values[i] == 0` and `_candidates[i].Bits == 0`, return `false`
-        //    (an empty cell with no valid candidates means the board has reached a contradiction).
-        // 3. Otherwise, return `true`.
-        throw new NotImplementedException("TODO [Module 1.2]: Implement Board.IsValid() using house bitmask checks.");
+        for (var i = 0; i < SudokuTopology.GridSize; i++)
+        {
+            if (HasDuplicates(SudokuTopology.RowIndices[i]))
+            {
+                return false;
+            }
+
+            if (HasDuplicates(SudokuTopology.ColumnIndices[i]))
+            {
+                return false;
+            }
+
+            if (HasDuplicates(SudokuTopology.BoxIndices[i]))
+            {
+                return false;
+            }
+        }
+
+        for (var i = 0; i < SudokuTopology.TotalCells; i++)
+        {
+            if (_values[i] == 0 && _candidates[i].Count == 0)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private bool HasDuplicates(int[] cellIndices)
+    {
+        int seen = 0;
+
+        foreach (int cellIndex in cellIndices)
+        {
+            int val = _values[cellIndex];
+
+            if (val == 0)
+            {
+                continue;
+            }
+            int mask = 1 << val;
+            
+            if ((seen & mask) != 0)
+            {
+                return true;
+            }
+
+            seen |= mask;
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -159,7 +200,21 @@ public sealed class Board
     /// <summary>
     /// Counts how many cells currently have a placed value (1..9).
     /// </summary>
-    public int FilledCellCount => _values.Count(v => v != 0);
+    public int FilledCellCount
+    {
+        get
+        {
+            int count = 0;
+            for (int i = 0; i < SudokuTopology.TotalCells; i++)
+            {
+                if (_values[i] != 0)
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
+    }
 
     /// <summary>
     /// Parses an 81-character puzzle string (where '1'..'9' are clues and '0' or '.' are empty cells).

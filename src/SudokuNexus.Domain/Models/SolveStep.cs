@@ -34,7 +34,7 @@ public sealed record SolveStep(
             board.PlaceDigit(PlacedCellIndex.Value, PlacedDigit.Value);
         }
 
-        foreach (var elimination in Eliminations)
+        foreach (CandidateElimination elimination in Eliminations)
         {
             board.EliminateCandidate(elimination.CellIndex, elimination.Digit);
         }
@@ -42,7 +42,7 @@ public sealed record SolveStep(
 }
 
 /// <summary>
-/// Full report produced by the HumanLogicalGrader when analyzing a puzzle.
+/// Full report produced when analyzing a puzzle.
 /// </summary>
 public sealed record GradingReport(
     DifficultyRating Rating,

@@ -3,16 +3,7 @@ using System.Numerics;
 namespace SudokuNexus.Domain.Primitives;
 
 /// <summary>
-/// MODULE 1.1: Candidate Bitmask.
-/// 
-/// Wraps an unsigned 16-bit integer (<see cref="ushort"/>) where bits 1 through 9 represent
-/// whether digits 1 through 9 are still valid candidates for a Sudoku cell.
-/// (Bit 0 is unused so that bit positions align 1-to-1 with digits 1..9).
-/// 
-/// Example:
-/// - Digit 1 -> bit 1 (1 &lt;&lt; 1 = 0b0000_0000_0000_0010 = 2)
-/// - Digit 9 -> bit 9 (1 &lt;&lt; 9 = 0b0000_0010_0000_0000 = 512)
-/// - All digits 1..9 -> 0b0000_0011_1111_1110 = 0x03FE
+/// Bitmask representation of candidate digits (1..9) for a Sudoku cell using bits 1 through 9 of a <see cref="ushort"/>.
 /// </summary>
 public readonly record struct CandidateMask(ushort Bits)
 {
@@ -54,14 +45,7 @@ public readonly record struct CandidateMask(ushort Bits)
     /// <summary>
     /// Returns the number of remaining candidate digits in this mask.
     /// </summary>
-    public int Count
-    {
-        get
-        {
-            //throw new NotImplementedException("TODO [Module 1.1]: Implement CandidateMask.Count using BitOperations.PopCount.");
-            return BitOperations.PopCount(Bits);
-        }
-    }
+    public int Count => BitOperations.PopCount(Bits);
 
     /// <summary>
     /// Checks whether the specified <paramref name="digit"/> (1..9) is currently set in the mask.
@@ -81,8 +65,7 @@ public readonly record struct CandidateMask(ushort Bits)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(digit, 1);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(digit, 9);
-
-        return new CandidateMask((ushort)(1 << digit));
+        return new CandidateMask((ushort)(Bits | (1 << digit)));
     }
 
     /// <summary>
@@ -102,7 +85,12 @@ public readonly record struct CandidateMask(ushort Bits)
     /// </summary>
     public int GetSingleDigit()
     {
-        return Count != 1 ? throw new InvalidOperationException("Mask does not contain exactly one candidate") : BitOperations.TrailingZeroCount(Bits);
+        if (Count != 1)
+        {
+            throw new InvalidOperationException("Mask does not contain exactly one candidate.");
+        }
+
+        return BitOperations.TrailingZeroCount(Bits);
     }
 
     /// <summary>
