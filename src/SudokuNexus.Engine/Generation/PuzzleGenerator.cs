@@ -99,7 +99,7 @@ public sealed class PuzzleGenerator
                 working.ClearCell(cellB);
             }
 
-            if (_dlxSolver.CountSolutions(working, limit: 2) != 1)
+            if (DlxSolver.CountSolutions(working, limit: 2) != 1)
             {
                 working.PlaceDigit(cellA, savedA, isInitialClue: true);
                 if (cellB != cellA)

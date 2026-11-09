@@ -51,6 +51,12 @@ Open the URL printed in the console (e.g., `http://localhost:5000`) to launch th
 dotnet run -c Release --project benchmarks/SudokuNexus.Benchmarks -- --filter "*"
 ```
 
+| Method | Mean | Allocated |
+| :--- | ---: | ---: |
+| `DLX Solve + Uniqueness (Easy Board)` | `15.05 µs` | `184 B` |
+| `DLX Solve + Uniqueness (AI Escargot Hardest)` | `345.11 µs` | `184 B` |
+| `Human Logical Grader (Step-by-Step Trace)` | `17.50 µs` | `15.23 KB` |
+
 ---
 
 ## API Endpoints

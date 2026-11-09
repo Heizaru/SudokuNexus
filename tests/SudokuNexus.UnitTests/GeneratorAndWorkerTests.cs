@@ -35,7 +35,7 @@ public sealed class GeneratorAndWorkerTests
 
         Board puzzleBoard = Board.TryParse(generated.PuzzleString).Value!;
         Assert.True(puzzleBoard.IsValid());
-        Assert.Equal(1, dlx.CountSolutions(puzzleBoard, limit: 2));
+        Assert.Equal(1, DlxSolver.CountSolutions(puzzleBoard, limit: 2));
 
         for (int i = 0; i < 81; i++)
         {

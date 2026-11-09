@@ -42,16 +42,20 @@ public sealed class InfrastructureAndTopologyTests
     [Fact]
     public void DlxToroidalMatrix_Has324ColumnsAnd9NodesPerColumn()
     {
-        ColumnNode header = DlxSolver.BuildSudokuToroidalMatrix(out DlxNode?[] rowFirstNodes);
-        Assert.Equal(729, rowFirstNodes.Length);
-        Assert.All(rowFirstNodes, Assert.NotNull);
+        Span<short> left = stackalloc short[DlxSolver.TotalNodes];
+        Span<short> right = stackalloc short[DlxSolver.TotalNodes];
+        Span<short> up = stackalloc short[DlxSolver.TotalNodes];
+        Span<short> down = stackalloc short[DlxSolver.TotalNodes];
+        Span<short> size = stackalloc short[DlxSolver.TotalColumns + 1];
+
+        DlxSolver.CopyTemplateTo(left, right, up, down, size);
 
         int colCount = 0;
-        for (var col = (ColumnNode)header.Right; col != header; col = (ColumnNode)col.Right)
+        for (short col = right[DlxSolver.HeaderNode]; col != DlxSolver.HeaderNode; col = right[col])
         {
-            Assert.Equal(colCount, col.ColumnIndex);
-            Assert.Equal(9, col.Size);
             colCount++;
+            Assert.Equal(colCount, col);
+            Assert.Equal(9, size[col]);
         }
 
         Assert.Equal(324, colCount);

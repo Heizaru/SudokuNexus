@@ -3,6 +3,7 @@
     <Description>ASP.NET Core 10 Minimal API and interactive Sudoku workbench UI.</Description>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.OpenApi" />
     <ProjectReference Include="..\SudokuNexus.Application\SudokuNexus.Application.csproj" />
     <ProjectReference Include="..\SudokuNexus.Infrastructure\SudokuNexus.Infrastructure.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />

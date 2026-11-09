@@ -9,15 +9,21 @@ public sealed class DlxSolverTests
     [Fact]
     public void CoverAndUncover_RestoresExactToroidalMatrixState()
     {
-        ColumnNode header = DlxSolver.BuildSudokuToroidalMatrix(out _);
-        var firstCol = (ColumnNode)header.Right;
+        Span<short> left = stackalloc short[DlxSolver.TotalNodes];
+        Span<short> right = stackalloc short[DlxSolver.TotalNodes];
+        Span<short> up = stackalloc short[DlxSolver.TotalNodes];
+        Span<short> down = stackalloc short[DlxSolver.TotalNodes];
+        Span<short> size = stackalloc short[DlxSolver.TotalColumns + 1];
 
-        DlxSolver.Cover(firstCol);
-        Assert.NotEqual(firstCol, header.Right);
+        DlxSolver.CopyTemplateTo(left, right, up, down, size);
+        short firstCol = right[DlxSolver.HeaderNode];
 
-        DlxSolver.Uncover(firstCol);
-        Assert.Same(firstCol, header.Right);
-        Assert.Equal(9, firstCol.Size);
+        DlxSolver.Cover(firstCol, left, right, up, down, size);
+        Assert.NotEqual(firstCol, right[DlxSolver.HeaderNode]);
+
+        DlxSolver.Uncover(firstCol, left, right, up, down, size);
+        Assert.Equal(firstCol, right[DlxSolver.HeaderNode]);
+        Assert.Equal(9, size[firstCol]);
     }
 
     [Fact]
@@ -65,7 +71,7 @@ public sealed class DlxSolverTests
         Board board = Board.TryParse(almostEmpty).Value!;
         var solver = new DlxSolver();
 
-        int count = solver.CountSolutions(board, limit: 2);
+        int count = DlxSolver.CountSolutions(board, limit: 2);
         Assert.Equal(2, count);
     }
 }
