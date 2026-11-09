@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SudokuNexus — .NET 10 Exact Cover & Logical Grader Workbench</title>
+    <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand">
+            <span class="badge-dotnet">.NET 10</span>
+            <h1>SudokuNexus</h1>
+            <span class="subtitle">Algorithm X (Dancing Links) &amp; Human Logical Grader Engine</span>
+        </div>
+        <div class="topbar-links">
+            <a href="/openapi/v1.json" target="_blank" class="btn-outline">OpenAPI Spec (JSON)</a>
+        </div>
+    </header>
+
+    <main class="workspace">
+        <!-- Left Column: Interactive 9x9 Grid & Controls -->
+        <section class="board-panel">
+            <div class="toolbar">
+                <label for="presetSelect">Load Test Preset:</label>
+                <select id="presetSelect"></select>
+                <button id="btnLoadPreset" class="btn-secondary">Load</button>
+            </div>
+
+            <div class="string-bar">
+                <input id="puzzleInput" type="text" maxlength="81" placeholder="Paste 81-char puzzle string (0 or . for empty)..." spellcheck="false" />
+                <button id="btnInspect" class="btn-secondary" title="Parse &amp; Compute Candidate Masks (Module 1)">Inspect Board</button>
+            </div>
+
+            <div id="sudokuGrid" class="sudoku-grid" aria-label="Sudoku 9x9 Grid"></div>
+
+            <div class="action-bar">
+                <button id="btnHint" class="btn-primary">Next Logical Hint (Module 3)</button>
+                <button id="btnApplyHint" class="btn-accent" disabled>Apply Step</button>
+                <button id="btnSolveDlx" class="btn-secondary">Fast DLX Solve (Module 2)</button>
+                <button id="btnAnalyze" class="btn-primary">Full Grader Analysis</button>
+            </div>
+
+            <div class="generator-bar">
+                <span>Generate Symmetric Puzzle (Module 4):</span>
+                <select id="genDifficulty">
+                    <option value="Easy">Easy</option>
+                    <option value="Medium" selected>Medium</option>
+                    <option value="Hard">Hard</option>
+                    <option value="Expert">Expert</option>
+                </select>
+                <button id="btnGenerate" class="btn-secondary">Generate</button>
+            </div>
+        </section>
+
+        <!-- Right Column: Diagnostics, Hints & Step-by-Step Trace -->
+        <section class="diagnostics-panel">
+            <!-- Status / Module Banner -->
+            <div id="statusBanner" class="status-card info">
+                <h3 id="statusTitle">Ready to Test Your Implementation</h3>
+                <p id="statusMessage">Select a preset and click <strong>Inspect Board</strong>, <strong>Next Logical Hint</strong>, or <strong>Fast DLX Solve</strong>.</p>
+            </div>
+
+            <!-- Metrics Strip -->
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <span class="metric-label">DLX Solve Time</span>
+                    <span id="metricDlxTime" class="metric-value">—</span>
+                </div>
+                <div class="metric-box">
+                    <span class="metric-label">Uniqueness</span>
+                    <span id="metricUnique" class="metric-value">—</span>
+                </div>
+                <div class="metric-box">
+                    <span class="metric-label">Difficulty Grade</span>
+                    <span id="metricDifficulty" class="metric-value">—</span>
+                </div>
+                <div class="metric-box">
+                    <span class="metric-label">Max Technique / SE</span>
+                    <span id="metricTechnique" class="metric-value">—</span>
+                </div>
+            </div>
+
+            <!-- Step-by-Step Logical Trace -->
+            <div class="trace-card">
+                <div class="trace-header">
+                    <h3>Human Logical Deduction Trace</h3>
+                    <span id="stepCounter" class="step-badge">0 steps</span>
+                </div>
+                <div id="traceList" class="trace-list">
+                    <p class="muted-placeholder">Run <strong>Full Grader Analysis</strong> to inspect every human deduction step in sequence.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>Stateless algorithmic core: Algorithm X (Dancing Links) Exact Cover solver and Strategy-pattern Human Logical Grader.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SudokuNexus.Domain\SudokuNexus.Domain.csproj" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+</Project>

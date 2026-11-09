@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>Application layer use cases, DTOs, interfaces, and producer-consumer Channel abstractions.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SudokuNexus.Domain\SudokuNexus.Domain.csproj" />
+    <ProjectReference Include="..\SudokuNexus.Engine\SudokuNexus.Engine.csproj" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+</Project>

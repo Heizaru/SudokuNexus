@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>Pure domain models, value objects, bitmask primitives, and Result types for SudokuNexus.</Description>
+  </PropertyGroup>
+</Project>
