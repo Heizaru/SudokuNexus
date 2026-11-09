@@ -5,19 +5,9 @@ using SudokuNexus.Domain.Primitives;
 namespace SudokuNexus.Engine.Grading.Strategies;
 
 /// <summary>
-/// MODULE 3.3: Naked Pair Strategy (Weight: 3.0).
-/// 
-/// Rule:
-/// If two cells in the same House (Row, Column, or 3x3 Box) have the EXACT SAME
-/// <see cref="CandidateMask"/> with <c>Count == 2</c> (for example, both cells can only be {4, 7}),
-/// then those two digits must occupy those two cells.
-/// Therefore, neither digit can appear in any OTHER empty cell in that House!
-/// 
-/// Tip: Notice how clean this is with bitmasks!
-/// Two cells <c>cellA</c> and <c>cellB</c> form a Naked Pair if:
-/// <c>maskA.Count == 2 &amp;&amp; maskA == maskB</c>.
-/// And another cell <c>otherCell</c> in the house has candidates to eliminate if:
-/// <c>(board.GetCandidates(otherCell) &amp; maskA).Bits != 0</c>!
+/// Naked Pair Strategy (Weight: 3.0).
+/// If two cells in the same house share an identical 2-candidate mask, those two digits are eliminated
+/// from all other empty cells in that house.
 /// </summary>
 public sealed class NakedPairStrategy : IDeductionStrategy
 {
@@ -28,19 +18,71 @@ public sealed class NakedPairStrategy : IDeductionStrategy
 
     public SolveStep? FindNextStep(Board board)
     {
-        // TODO [Module 3.3]:
-        // Iterate over each `houseType` in `AllHouseTypes` and `houseIndex` in 0..8:
-        // 1. Get the 9 cells of the house: `ReadOnlySpan<int> houseCells = SudokuTopology.GetHouseCells(houseType, houseIndex)`.
-        // 2. Find all pairs of cells `(cellA, cellB)` in `houseCells` where:
-        //    - `board.GetValue(cellA) == 0`
-        //    - `CandidateMask mask = board.GetCandidates(cellA)` has `mask.Count == 2`
-        //    - `board.GetCandidates(cellB) == mask`
-        // 3. For such a pair, check all OTHER empty cells `peer` in `houseCells` (`peer != cellA && peer != cellB`):
-        //    - For each digit `d` in `mask.ToDigits()`:
-        //      If `board.GetCandidates(peer).HasCandidate(d)`, add `new CandidateElimination(peer, d)` to an eliminations list.
-        // 4. IMPORTANT: Only return a `SolveStep` if `eliminations.Count > 0`!
-        //    (If the pair's digits are already eliminated from all other cells in the house, keep searching so we don't loop forever).
-        // 5. Return `new SolveStep(Technique, DifficultyWeight, description, [cellA, cellB], null, null, eliminations)`.
-        throw new NotImplementedException("TODO [Module 3.3]: Implement NakedPairStrategy.FindNextStep using CandidateMask equality.");
+        foreach (HouseType houseType in AllHouseTypes)
+        {
+            for (int houseIndex = 0; houseIndex < 9; houseIndex++)
+            {
+                ReadOnlySpan<int> houseCells = SudokuTopology.GetHouseCells(houseType, houseIndex);
+
+                // Check all unique pairs of cells in this house
+                for (int i = 0; i < houseCells.Length; i++)
+                {
+                    int cellA = houseCells[i];
+                    if (board.GetValue(cellA) != 0) continue;
+
+                    CandidateMask maskA = board.GetCandidates(cellA);
+                    if (maskA.Count != 2) continue;
+
+                    for (int j = i + 1; j < houseCells.Length; j++)
+                    {
+                        int cellB = houseCells[j];
+                        if (board.GetValue(cellB) != 0) continue;
+
+                        CandidateMask maskB = board.GetCandidates(cellB);
+                        if (maskA != maskB) continue;
+
+                        // Found a Naked Pair (cellA, cellB) with maskA!
+                        // Now collect eliminations from all OTHER cells in this house.
+                        List<CandidateElimination>? eliminations = null;
+
+                        for (int k = 0; k < houseCells.Length; k++)
+                        {
+                            int peer = houseCells[k];
+                            if (peer == cellA || peer == cellB) continue;
+                            if (board.GetValue(peer) != 0) continue;
+
+                            CandidateMask peerMask = board.GetCandidates(peer);
+                            CandidateMask commonCandidates = peerMask & maskA;
+                            if (commonCandidates.Bits == 0) continue;
+
+                            eliminations ??= new List<CandidateElimination>();
+                            foreach (int digit in commonCandidates.ToDigits())
+                            {
+                                eliminations.Add(new CandidateElimination(peer, digit));
+                            }
+                        }
+
+                        // Only return a step if it actually eliminates at least one candidate
+                        if (eliminations is { Count: > 0 })
+                        {
+                            IReadOnlyList<int> digits = maskA.ToDigits();
+                            string description =
+                                $"Naked Pair {{{digits[0]},{digits[1]}}} in {houseType} {houseIndex + 1} at cells ({cellA},{cellB}) eliminates candidates from other cells.";
+
+                            return new SolveStep(
+                                Technique,
+                                DifficultyWeight,
+                                description,
+                                PrimaryCells: [cellA, cellB],
+                                PlacedCellIndex: null,
+                                PlacedDigit: null,
+                                Eliminations: eliminations);
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 }

@@ -4,13 +4,7 @@ using SudokuNexus.Domain.Models;
 namespace SudokuNexus.Engine.Grading.Strategies;
 
 /// <summary>
-/// Strategy Pattern contract for a human logical Sudoku deduction technique.
-/// 
-/// Architectural Note:
-/// Each concrete strategy is registered in the Dependency Injection container as an
-/// <see cref="IDeductionStrategy"/>. The <see cref="HumanLogicalGrader"/> receives
-/// <c>IEnumerable&lt;IDeductionStrategy&gt;</c> via constructor injection, sorts them by
-/// <see cref="DifficultyWeight"/>, and always attempts the simplest human technique first.
+/// Contract for a human logical Sudoku deduction technique.
 /// </summary>
 public interface IDeductionStrategy
 {

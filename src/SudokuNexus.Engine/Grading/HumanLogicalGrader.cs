@@ -5,12 +5,8 @@ using SudokuNexus.Engine.Grading.Strategies;
 namespace SudokuNexus.Engine.Grading;
 
 /// <summary>
-/// MODULE 3.5: The Human Logical Grader Orchestrator.
-/// 
-/// Uses Constructor Injection (`IEnumerable&lt;IDeductionStrategy&gt;`) to receive all registered
-/// solving techniques, orders them from simplest (lowest <see cref="IDeductionStrategy.DifficultyWeight"/>)
-/// to hardest, and repeatedly applies the easiest available deduction step until the board is solved
-/// or no registered human strategy can make further progress.
+/// Evaluates and grades Sudoku puzzles by iteratively applying registered <see cref="IDeductionStrategy"/>
+/// implementations in order of increasing difficulty weight.
 /// </summary>
 public sealed class HumanLogicalGrader
 {
@@ -48,27 +44,43 @@ public sealed class HumanLogicalGrader
     }
 
     /// <summary>
-    /// MODULE 3.5: Simulates a human solving the <paramref name="initialBoard"/> step-by-step,
+    /// Simulates a human solving the <paramref name="initialBoard"/> step-by-step,
     /// recording every <see cref="SolveStep"/> and computing the overall <see cref="GradingReport"/>.
     /// </summary>
     public GradingReport Grade(Board initialBoard)
     {
-        // TODO [Module 3.5]:
-        // 1. Clone `initialBoard` (`Board workingBoard = initialBoard.Clone()`) so we don't mutate the caller's instance.
-        // 2. Create a `var steps = new List<SolveStep>()`.
-        // 3. While `!workingBoard.IsSolved()`:
-        //    - Call `SolveStep? nextStep = GetNextHint(workingBoard)`.
-        //    - If `nextStep is null`, break out of the loop (the human strategies got stuck!).
-        //    - Apply the step: `nextStep.ApplyTo(workingBoard)` and add `nextStep` to `steps`.
-        // 4. Compute:
-        //    - `bool solvedEntirelyByLogic = workingBoard.IsSolved()`
-        //    - `double maxWeight = steps.Count > 0 ? steps.Max(s => s.DifficultyWeight) : 0.0`
-        //    - `double totalScore = Math.Round(steps.Sum(s => s.DifficultyWeight), 2)`
-        //    - `TechniqueType maxTechnique = steps.Count > 0 ? steps.MaxBy(s => s.DifficultyWeight)!.Technique : TechniqueType.None`
-        //      (If `!solvedEntirelyByLogic`, set `maxTechnique = TechniqueType.BacktrackingFallback`).
-        // 5. Map `(solvedEntirelyByLogic, maxWeight)` to a `DifficultyRating` using `ClassifyDifficulty(solvedEntirelyByLogic, maxWeight)`.
-        // 6. Return `new GradingReport(...)`.
-        throw new NotImplementedException("TODO [Module 3.5]: Implement HumanLogicalGrader.Grade(Board initialBoard).");
+        Board workingBoard = initialBoard.Clone();
+        var steps = new List<SolveStep>();
+
+        while (!workingBoard.IsSolved())
+        {
+            SolveStep? nextStep = GetNextHint(workingBoard);
+            if (nextStep is null)
+            {
+                break;
+            }
+
+            nextStep.ApplyTo(workingBoard);
+            steps.Add(nextStep);
+        }
+
+        bool solvedEntirelyByLogic = workingBoard.IsSolved();
+        SolveStep? hardestStep = steps.MaxBy(s => s.DifficultyWeight);
+        double maxWeight = hardestStep?.DifficultyWeight ?? 0.0;
+        double totalScore = Math.Round(steps.Sum(s => s.DifficultyWeight), 2);
+        TechniqueType maxTechnique = !solvedEntirelyByLogic
+            ? TechniqueType.BacktrackingFallback
+            : hardestStep?.Technique ?? TechniqueType.None;
+
+        DifficultyRating rating = ClassifyDifficulty(solvedEntirelyByLogic, maxWeight);
+        return new GradingReport(
+            rating,
+            maxTechnique,
+            maxWeight,
+            totalScore,
+            solvedEntirelyByLogic,
+            workingBoard.ToCanonicalString(),
+            steps);
     }
 
     /// <summary>
