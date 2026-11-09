@@ -15,19 +15,8 @@ public sealed record DlxSolveResult(
 );
 
 /// <summary>
-/// MODULE 2: Donald Knuth's Algorithm X implemented with Dancing Links (DLX).
-/// 
-/// How Sudoku Maps to Exact Cover:
-/// - There are 9 × 9 × 9 = 729 possible candidate placements: placing digit d (1..9) in cell (r, c).
-/// - Each placement satisfies exactly 4 constraints out of 324 total columns:
-///   1. Cell constraint [0..80]:       Every cell (r, c) must contain exactly one digit.
-///      Column = r * 9 + c
-///   2. Row-Digit constraint [81..161]: Every row r must contain each digit d (0..8) once.
-///      Column = 81 + r * 9 + (d - 1)
-///   3. Col-Digit constraint [162..242]: Every column c must contain each digit d (0..8) once.
-///      Column = 162 + c * 9 + (d - 1)
-///   4. Box-Digit constraint [243..323]: Every 3x3 box b must contain each digit d (0..8) once.
-///      Column = 243 + b * 9 + (d - 1)
+/// Exact cover Sudoku solver using Donald Knuth's Algorithm X and Dancing Links (DLX).
+/// Maps a 9x9 Sudoku grid to a 729x324 exact cover matrix (cell, row-digit, column-digit, and box-digit constraints).
 /// </summary>
 public sealed class DlxSolver
 {
@@ -69,7 +58,7 @@ public sealed class DlxSolver
 
     /// <summary>
     /// Counts the number of valid solutions for <paramref name="board"/> up to <paramref name="limit"/>.
-    /// Passing <c>limit = 2</c> is the fastest way to prove a puzzle has a unique solution (count == 1).
+    /// Passing <c>limit = 2</c> is the fastest way to prove a puzzle has a unique solution
     /// </summary>
     public int CountSolutions(Board board, int limit = 2)
     {
@@ -84,66 +73,60 @@ public sealed class DlxSolver
         var currentSolution = new List<int>(81);
 
         // Pre-cover columns corresponding to initial clues already placed on the board
-        for (int cellIndex = 0; cellIndex < SudokuTopology.TotalCells; cellIndex++)
+        for (var cellIndex = 0; cellIndex < SudokuTopology.TotalCells; cellIndex++)
         {
             int placedDigit = board.GetValue(cellIndex);
-            if (placedDigit != 0)
-            {
-                int rowId = cellIndex * 9 + (placedDigit - 1);
-                DlxNode? firstNode = rowFirstNodes[rowId];
-                if (firstNode is not null)
-                {
-                    currentSolution.Add(rowId);
-                    CoverRowClue(firstNode);
-                }
-            }
+            if (placedDigit == 0) continue;
+            int rowId = cellIndex * 9 + (placedDigit - 1);
+            DlxNode? firstNode = rowFirstNodes[rowId];
+            if (firstNode is null) continue;
+            currentSolution.Add(rowId);
+            CoverRowClue(firstNode);
         }
 
         Search(header, currentSolution, solutions, maxSolutions);
     }
 
     /// <summary>
-    /// MODULE 2.1: Covers a constraint column <paramref name="column"/> in the toroidal matrix.
-    /// 
-    /// Knuth's Cover(c) specification:
-    /// 1. Unlink <paramref name="column"/> horizontally from its neighbors:
-    ///    <c>column.Right.Left = column.Left;</c>
-    ///    <c>column.Left.Right = column.Right;</c>
-    /// 2. For each node <c>i = column.Down</c> while <c>i != column</c> (moving Down):
-    ///    For each node <c>j = i.Right</c> while <c>j != i</c> (moving Right across the row):
-    ///      Unlink <c>j</c> vertically from its column:
-    ///      <c>j.Down.Up = j.Up;</c>
-    ///      <c>j.Up.Down = j.Down;</c>
-    ///      Decrement <c>j.Column.Size--</c>.
+    /// Covers a constraint column and removes all conflicting rows from the toroidal matrix.
     /// </summary>
     public static void Cover(ColumnNode column)
     {
-        // TODO [Module 2.1]: Implement Knuth's Cover(c) operation on the toroidal doubly-linked list.
-        throw new NotImplementedException("TODO [Module 2.1]: Implement DlxSolver.Cover(ColumnNode column).");
+        column.Right.Left = column.Left;
+        column.Left.Right = column.Right;
+
+        for (DlxNode i = column.Down; i != column; i = i.Down)
+        {
+            for (DlxNode j = i.Right; j != i; j = j.Right)
+            {
+                j.Down.Up = j.Up;
+                j.Up.Down = j.Down;
+                j.Column.Size--;
+            }
+        }
     }
 
     /// <summary>
-    /// MODULE 2.1: Uncovers a constraint column <paramref name="column"/> in the exact reverse order of <see cref="Cover"/>.
-    /// 
-    /// Knuth's Uncover(c) specification:
-    /// 1. For each node <c>i = column.Up</c> while <c>i != column</c> (moving Up!):
-    ///    For each node <c>j = i.Left</c> while <c>j != i</c> (moving Left!):
-    ///      Increment <c>j.Column.Size++</c>.
-    ///      Relink <c>j</c> vertically into its column:
-    ///      <c>j.Down.Up = j;</c>
-    ///      <c>j.Up.Down = j;</c>
-    /// 2. Relink <paramref name="column"/> horizontally:
-    ///    <c>column.Right.Left = column;</c>
-    ///    <c>column.Left.Right = column;</c>
+    /// Uncovers a constraint column in reverse order, restoring all linked rows and nodes.
     /// </summary>
     public static void Uncover(ColumnNode column)
     {
-        // TODO [Module 2.1]: Implement Knuth's Uncover(c) operation (must traverse Up and Left!).
-        throw new NotImplementedException("TODO [Module 2.1]: Implement DlxSolver.Uncover(ColumnNode column).");
+        for (DlxNode i = column.Up; i != column; i = i.Up)
+        {
+            for (DlxNode j = i.Left; j != i; j = j.Left)
+            {
+                j.Column.Size++;
+                j.Down.Up = j;
+                j.Up.Down = j;
+            }
+        }
+
+        column.Right.Left = column;
+        column.Left.Right = column;
     }
 
     /// <summary>
-    /// MODULE 2.2: Recursive Algorithm X Search with the S-Heuristic (minimum column size).
+    /// Recursive Algorithm X Search with minimum column size.
     /// </summary>
     private static void Search(
         ColumnNode header,
@@ -151,22 +134,55 @@ public sealed class DlxSolver
         List<int[]> solutions,
         int maxSolutions)
     {
-        // TODO [Module 2.2]:
-        // 1. Base case: If `header.Right == header`, all 324 constraints are satisfied!
-        //    Add `currentSolution.ToArray()` to `solutions` and return.
-        // 2. Choose the column `c` with the smallest `Size` (S-heuristic) by iterating
-        //    from `var col = (ColumnNode)header.Right` while `col != header`.
-        //    - Optimization: If `c.Size == 0`, this branch is a dead end — return immediately!
-        // 3. Call `Cover(c)`.
-        // 4. For each row node `r = c.Down` while `r != c`:
-        //    a. Push `r.RowId` to `currentSolution`.
-        //    b. For each node `j = r.Right` while `j != r`: call `Cover(j.Column)`.
-        //    c. Recursively call `Search(header, currentSolution, solutions, maxSolutions)`.
-        //    d. For each node `j = r.Left` while `j != r`: call `Uncover(j.Column)`.
-        //    e. Pop the last item from `currentSolution`.
-        //    f. Early exit: if `solutions.Count >= maxSolutions`, break out of the loop!
-        // 5. Call `Uncover(c)`.
-        throw new NotImplementedException("TODO [Module 2.2]: Implement DlxSolver.Search with S-heuristic.");
+        if (header.Right == header)
+        {
+            solutions.Add([.. currentSolution]);
+            return;
+        }
+
+        // Choose the column with the smallest size
+        ColumnNode c = (ColumnNode)header.Right;
+        for (var col = (ColumnNode)header.Right; col != header; col = (ColumnNode)col.Right)
+        {
+            if (col.Size < c.Size)
+            {
+                c = col;
+            }
+        }
+
+        // No need to look further, this path isn't possible.
+        if (c.Size == 0)
+        {
+            return;
+        }
+
+        Cover(c);
+
+        for (DlxNode r = c.Down; r != c; r = r.Down)
+        {
+            currentSolution.Add(r.RowId);
+
+            for (DlxNode j = r.Right; j != r; j = j.Right)
+            {
+                Cover(j.Column);
+            }
+
+            Search(header, currentSolution, solutions, maxSolutions);
+
+            for (DlxNode j = r.Left; j != r; j = j.Left)
+            {
+                Uncover(j.Column);
+            }
+
+            currentSolution.RemoveAt(currentSolution.Count - 1);
+
+            if (solutions.Count >= maxSolutions)
+            {
+                break;
+            }
+        }
+
+        Uncover(c);
     }
 
     private static void CoverRowClue(DlxNode firstNode)
@@ -180,7 +196,6 @@ public sealed class DlxSolver
 
     /// <summary>
     /// Builds the 729 × 324 toroidal doubly-linked list representing all possible Sudoku placements.
-    /// (Provided complete so you can focus on Cover, Uncover, and Search).
     /// </summary>
     public static ColumnNode BuildSudokuToroidalMatrix(out DlxNode?[] rowFirstNodes)
     {

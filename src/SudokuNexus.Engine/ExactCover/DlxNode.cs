@@ -26,7 +26,7 @@ public class DlxNode
 }
 
 /// <summary>
-/// Specialized header node for each of the 324 Exact Cover constraint columns.
+/// Specialized header node for each of the columns.
 /// Tracks <see cref="Size"/> (number of active 1s in the column) so the S-Heuristic
 /// can pick the most constrained column in O(columns) time.
 /// </summary>
