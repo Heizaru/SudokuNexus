@@ -5,6 +5,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SudokuNexus.Domain\SudokuNexus.Domain.csproj" />
     <ProjectReference Include="..\SudokuNexus.Engine\SudokuNexus.Engine.csproj" />
+    <PackageReference Include="JetBrains.Annotations" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
