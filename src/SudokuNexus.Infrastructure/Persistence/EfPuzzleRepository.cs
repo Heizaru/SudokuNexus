@@ -66,7 +66,7 @@ public sealed class EfPuzzleRepository(SudokuDbContext dbContext) : IPuzzleRepos
             .Select(g => new { Difficulty = g.Key, Count = g.Count() })
             .ToListAsync(cancellationToken);
 
-        var result = Enum.GetValues<DifficultyRating>().ToDictionary(d => d, _ => 0);
+        Dictionary<DifficultyRating, int> result = Enum.GetValues<DifficultyRating>().ToDictionary(d => d, _ => 0);
         foreach (var item in counts)
         {
             result[item.Difficulty] = item.Count;

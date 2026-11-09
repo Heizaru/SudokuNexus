@@ -16,7 +16,7 @@ public sealed record GeneratedPuzzle(
 );
 
 /// <summary>
-/// MODULE 4.1: Symmetric Sudoku Puzzle Generator.
+/// Symmetric Sudoku Puzzle Generator.
 /// 
 /// Combines <see cref="DlxSolver"/> (for fast uniqueness verification) with <see cref="HumanLogicalGrader"/>
 /// (to ensure the generated puzzle matches the requested human difficulty level).
@@ -67,24 +67,49 @@ public sealed class PuzzleGenerator
     }
 
     /// <summary>
-    /// MODULE 4.1: Removes clues in 180-degree rotationally symmetric pairs <c>(i, 80 - i)</c>
+    /// Removes clues in 180-degree rotationally symmetric pairs <c>(i, 80 - i)</c>
     /// while preserving a unique solution (<c>_dlxSolver.CountSolutions(board, limit: 2) == 1</c>).
     /// </summary>
     public Board DigSymmetricClues(Board solvedBoard, int targetClues, Random random)
     {
-        // TODO [Module 4.1]:
-        // 1. Clone `solvedBoard` into `Board working = solvedBoard.Clone()`.
-        // 2. Create a list of cell indices `0..40` (representing each symmetric pair `(i, 80 - i)`, where index 40 is the center cell R5C5)
-        //    and shuffle it randomly using `random`.
-        // 3. Iterate through each `int cellA` in the shuffled indices:
-        //    - If `working.FilledCellCount <= targetClues`, break!
-        //    - Let `int cellB = 80 - cellA`.
-        //    - Save the current digits `int savedA = working.GetValue(cellA)` and `int savedB = working.GetValue(cellB)`.
-        //    - Clear `cellA` (and `cellB` if `cellB != cellA`) using `working.ClearCell(...)`.
-        //    - Check uniqueness: `if (_dlxSolver.CountSolutions(working, limit: 2) != 1)`:
-        //      Removing this pair created multiple solutions! Restore `savedA` and `savedB` via `working.PlaceDigit(..., isInitialClue: true)`.
-        // 4. Return `working`.
-        throw new NotImplementedException("TODO [Module 4.1]: Implement PuzzleGenerator.DigSymmetricClues with uniqueness verification.");
+        Board working = solvedBoard.Clone();
+
+        Span<int> pairIndices = stackalloc int[41];
+        for (int i = 0; i <= 40; i++)
+        {
+            pairIndices[i] = i;
+        }
+
+        random.Shuffle(pairIndices);
+
+        foreach (int cellA in pairIndices)
+        {
+            if (working.FilledCellCount <= targetClues)
+            {
+                break;
+            }
+
+            int cellB = 80 - cellA;
+            int savedA = working.GetValue(cellA);
+            int savedB = working.GetValue(cellB);
+
+            working.ClearCell(cellA);
+            if (cellB != cellA)
+            {
+                working.ClearCell(cellB);
+            }
+
+            if (_dlxSolver.CountSolutions(working, limit: 2) != 1)
+            {
+                working.PlaceDigit(cellA, savedA, isInitialClue: true);
+                if (cellB != cellA)
+                {
+                    working.PlaceDigit(cellB, savedB, isInitialClue: true);
+                }
+            }
+        }
+
+        return working;
     }
 
     /// <summary>

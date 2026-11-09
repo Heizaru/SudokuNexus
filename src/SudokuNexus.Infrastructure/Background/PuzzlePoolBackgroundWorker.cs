@@ -8,13 +8,8 @@ using SudokuNexus.Engine.Generation;
 namespace SudokuNexus.Infrastructure.Background;
 
 /// <summary>
-/// MODULE 5.1: Enterprise Background Worker using <see cref="BackgroundService"/> and <see cref="IAsyncEnumerable{T}"/>.
-/// 
-/// Architectural Note:
-/// In ASP.NET Core, a <see cref="BackgroundService"/> is registered as a Singleton, whereas EF Core's
-/// <c>DbContext</c> and <see cref="IPuzzleRepository"/> are Scoped!
-/// Therefore, a background worker must inject <see cref="IServiceScopeFactory"/> and create a fresh
-/// <see cref="IServiceScope"/> for each unit of work.
+/// Background worker that consumes puzzle generation requests from <see cref="IPuzzleGenerationQueue"/>
+/// and replenishes the SQLite puzzle pool per difficulty rating.
 /// </summary>
 public sealed class PuzzlePoolBackgroundWorker(
     IPuzzleGenerationQueue queue,
@@ -36,11 +31,6 @@ public sealed class PuzzlePoolBackgroundWorker(
                 {
                     await ProcessGenerationRequestAsync(requestedDifficulty, stoppingToken);
                 }
-                catch (NotImplementedException)
-                {
-                    // Expected before Module 4 & 5 are completed by the developer.
-                    logger.LogDebug("Background generation skipped: Module 4/5 not yet implemented.");
-                }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
                     logger.LogError(ex, "Error while generating background puzzle for {Difficulty}.", requestedDifficulty);
@@ -54,25 +44,33 @@ public sealed class PuzzlePoolBackgroundWorker(
     }
 
     /// <summary>
-    /// MODULE 5.1: Processes a single generation request using a scoped <see cref="IPuzzleRepository"/>.
+    /// Processes a single generation request using a scoped <see cref="IPuzzleRepository"/>.
     /// </summary>
     public async Task<bool> ProcessGenerationRequestAsync(
         DifficultyRating targetDifficulty,
         CancellationToken cancellationToken = default)
     {
-        _ = generator;
-        _ = scopeFactory;
-        _ = targetDifficulty;
-        _ = cancellationToken;
+        await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
+        IPuzzleRepository repo = scope.ServiceProvider.GetRequiredService<IPuzzleRepository>();
 
-        // TODO [Module 5.1]:
-        // 1. Create an async DI scope: `await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();`
-        // 2. Resolve `IPuzzleRepository repo = scope.ServiceProvider.GetRequiredService<IPuzzleRepository>();`
-        // 3. Check current pool count: `int currentCount = await repo.CountByDifficultyAsync(targetDifficulty, cancellationToken);`
-        //    If `currentCount >= TargetPoolSizePerDifficulty`, return `false` (pool is already full!).
-        // 4. Generate a new puzzle: `GeneratedPuzzle generated = generator.Generate(targetDifficulty);`
-        // 5. Persist it via `await repo.AddPuzzleAsync(new StoredPuzzleDto(...), cancellationToken);`
-        // 6. Return `true`.
-        throw new NotImplementedException("TODO [Module 5.1]: Implement PuzzlePoolBackgroundWorker.ProcessGenerationRequestAsync using IServiceScopeFactory.");
+        int currentCount = await repo.CountByDifficultyAsync(targetDifficulty, cancellationToken);
+        if (currentCount >= TargetPoolSizePerDifficulty)
+        {
+            return false;
+        }
+
+        GeneratedPuzzle generated = generator.Generate(targetDifficulty);
+        var dto = new StoredPuzzleDto(
+            Id: Guid.NewGuid(),
+            PuzzleString: generated.PuzzleString,
+            SolutionString: generated.SolutionString,
+            Difficulty: targetDifficulty,
+            MaxTechnique: generated.GradingReport.MaxTechniqueUsed,
+            TotalWeightScore: generated.GradingReport.TotalWeightScore,
+            GivenClueCount: generated.GivenClueCount,
+            CreatedAtUtc: DateTimeOffset.UtcNow);
+
+        await repo.AddPuzzleAsync(dto, cancellationToken);
+        return true;
     }
 }
