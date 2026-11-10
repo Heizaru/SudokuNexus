@@ -49,8 +49,9 @@ public sealed class InfrastructureAndTopologyTests
         int colCount = 0;
         for (var col = (ColumnNode)header.Right; col != header; col = (ColumnNode)col.Right)
         {
-            colCount++;
+            Assert.Equal(colCount, col.ColumnIndex);
             Assert.Equal(9, col.Size);
+            colCount++;
         }
 
         Assert.Equal(324, colCount);

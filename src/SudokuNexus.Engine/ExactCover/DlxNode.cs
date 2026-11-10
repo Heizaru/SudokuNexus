@@ -12,7 +12,7 @@ public class DlxNode
     public DlxNode Right { get; set; }
     public DlxNode Up { get; set; }
     public DlxNode Down { get; set; }
-    public ColumnNode Column { get; set; }
+    public ColumnNode Column { get; init; }
     public int RowId { get; init; }
 
     public DlxNode()
@@ -40,4 +40,6 @@ public sealed class ColumnNode : DlxNode
         ColumnIndex = columnIndex;
         Column = this;
     }
+
+    public override string ToString() => $"Col {ColumnIndex} (Size: {Size})";
 }

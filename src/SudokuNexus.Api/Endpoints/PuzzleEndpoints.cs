@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SudokuNexus.Application.Abstractions;
 using SudokuNexus.Application.Contracts;
@@ -14,7 +15,7 @@ public static class PuzzleEndpoints
         RouteGroupBuilder group = app.MapGroup("/api/puzzles")
             .WithTags("Sudoku Engine & Grader");
 
-        group.MapGet("/presets", () => Results.Ok(PuzzleApplicationService.GetCuratedPresets()))
+        group.MapGet("/presets", () => TypedResults.Ok(PuzzleApplicationService.GetCuratedPresets()))
             .WithName("GetCuratedPresets")
             .WithSummary("Returns curated test boards (Singles, Pairs, X-Wing, AI Escargot).");
 
@@ -44,7 +45,7 @@ public static class PuzzleEndpoints
             CancellationToken cancellationToken) =>
         {
             StoredPuzzleDto puzzle = await service.GetOrGeneratePuzzleAsync(difficulty, cancellationToken);
-            return Results.Ok(puzzle);
+            return TypedResults.Ok(puzzle);
         })
         .WithName("GeneratePuzzle")
         .WithSummary("Fetches or generates a rotationally symmetric puzzle with a unique solution.");
@@ -54,7 +55,7 @@ public static class PuzzleEndpoints
             CancellationToken cancellationToken) =>
         {
             IReadOnlyDictionary<DifficultyRating, int> stats = await repository.GetPoolStatisticsAsync(cancellationToken);
-            return Results.Ok(stats);
+            return TypedResults.Ok(stats);
         })
         .WithName("GetPoolStatistics")
         .WithSummary("Returns the count of pre-generated puzzles in the SQLite pool per difficulty rating.");
@@ -62,14 +63,14 @@ public static class PuzzleEndpoints
         return app;
     }
 
-    private static IResult ToHttpResult<T>(Result<T> result)
+    private static Results<Ok<T>, ProblemHttpResult> ToHttpResult<T>(Result<T> result)
     {
         if (result.IsSuccess)
         {
-            return Results.Ok(result.Value);
+            return TypedResults.Ok(result.Value!);
         }
 
-        return Results.Problem(
+        return TypedResults.Problem(
             title: result.ErrorCode ?? "VALIDATION_ERROR",
             detail: result.ErrorMessage,
             statusCode: StatusCodes.Status400BadRequest);
