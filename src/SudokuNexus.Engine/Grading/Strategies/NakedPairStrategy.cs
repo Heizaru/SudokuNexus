@@ -20,12 +20,12 @@ public sealed class NakedPairStrategy : IDeductionStrategy
     {
         foreach (HouseType houseType in AllHouseTypes)
         {
-            for (int houseIndex = 0; houseIndex < 9; houseIndex++)
+            for (var houseIndex = 0; houseIndex < 9; houseIndex++)
             {
                 ReadOnlySpan<int> houseCells = SudokuTopology.GetHouseCells(houseType, houseIndex);
 
                 // Check all unique pairs of cells in this house
-                for (int i = 0; i < houseCells.Length; i++)
+                for (var i = 0; i < houseCells.Length; i++)
                 {
                     int cellA = houseCells[i];
                     if (board.GetValue(cellA) != 0) continue;
@@ -45,7 +45,7 @@ public sealed class NakedPairStrategy : IDeductionStrategy
                         // Now collect eliminations from all OTHER cells in this house.
                         List<CandidateElimination>? eliminations = null;
 
-                        for (int k = 0; k < houseCells.Length; k++)
+                        for (var k = 0; k < houseCells.Length; k++)
                         {
                             int peer = houseCells[k];
                             if (peer == cellA || peer == cellB) continue;
@@ -66,7 +66,7 @@ public sealed class NakedPairStrategy : IDeductionStrategy
                         if (eliminations is { Count: > 0 })
                         {
                             IReadOnlyList<int> digits = maskA.ToDigits();
-                            string description =
+                            var description =
                                 $"Naked Pair {{{digits[0]},{digits[1]}}} in {houseType} {houseIndex + 1} at cells ({cellA},{cellB}) eliminates candidates from other cells.";
 
                             return new SolveStep(

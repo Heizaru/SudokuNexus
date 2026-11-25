@@ -57,16 +57,16 @@ public sealed class DlxSolver
         short nextNode = TotalColumns + 1;
         Span<int> constraintCols = stackalloc int[4];
 
-        for (int r = 0; r < 9; r++)
+        for (var r = 0; r < 9; r++)
         {
-            for (int c = 0; c < 9; c++)
+            for (var c = 0; c < 9; c++)
             {
                 int cellIndex = r * 9 + c;
                 int boxIndex = (r / 3) * 3 + (c / 3);
 
-                for (int d = 0; d < 9; d++)
+                for (var d = 0; d < 9; d++)
                 {
-                    short rowId = (short)(cellIndex * 9 + d);
+                    var rowId = (short)(cellIndex * 9 + d);
 
                     // 1-based column header indices (1..324)
                     constraintCols[0] = 1 + cellIndex;
@@ -75,9 +75,9 @@ public sealed class DlxSolver
                     constraintCols[3] = 1 + 243 + boxIndex * 9 + d;
 
                     short firstInRow = 0;
-                    for (int k = 0; k < 4; k++)
+                    for (var k = 0; k < 4; k++)
                     {
-                        short colNode = (short)constraintCols[k];
+                        var colNode = (short)constraintCols[k];
                         short node = nextNode++;
 
                         TemplateCol[node] = colNode;
@@ -171,10 +171,10 @@ public sealed class DlxSolver
         TemplateSize.AsSpan().CopyTo(size);
 
         Span<int> currentSolution = stackalloc int[SudokuTopology.TotalCells];
-        int depth = 0;
+        var depth = 0;
 
         // Pre-cover columns corresponding to initial clues already placed on the board
-        for (int cellIndex = 0; cellIndex < SudokuTopology.TotalCells; cellIndex++)
+        for (var cellIndex = 0; cellIndex < SudokuTopology.TotalCells; cellIndex++)
         {
             int placedDigit = board.GetValue(cellIndex);
             if (placedDigit == 0) continue;
@@ -190,7 +190,7 @@ public sealed class DlxSolver
             }
         }
 
-        int solutionCount = 0;
+        var solutionCount = 0;
         Search(left, right, up, down, size, currentSolution, depth, maxSolutions, ref solutionCount, firstSolutionRows);
         return solutionCount;
     }
@@ -329,7 +329,7 @@ public sealed class DlxSolver
     }
 
     /// <summary>
-    /// Copies the precomputed 729x324 toroidal matrix template into the provided spans.
+    /// Copies the precomputed 729x324 matrix template into the provided spans.
     /// </summary>
     public static void CopyTemplateTo(
         Span<short> left,

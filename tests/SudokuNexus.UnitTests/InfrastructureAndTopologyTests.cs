@@ -15,7 +15,7 @@ public sealed class InfrastructureAndTopologyTests
     [Fact]
     public void SudokuTopology_EachCellHasExactly20DistinctPeers()
     {
-        for (int cell = 0; cell < SudokuTopology.TotalCells; cell++)
+        for (var cell = 0; cell < SudokuTopology.TotalCells; cell++)
         {
             int[] peers = SudokuTopology.Peers[cell];
             Assert.Equal(20, peers.Length);
@@ -50,7 +50,7 @@ public sealed class InfrastructureAndTopologyTests
 
         DlxSolver.CopyTemplateTo(left, right, up, down, size);
 
-        int colCount = 0;
+        var colCount = 0;
         for (short col = right[DlxSolver.HeaderNode]; col != DlxSolver.HeaderNode; col = right[col])
         {
             colCount++;

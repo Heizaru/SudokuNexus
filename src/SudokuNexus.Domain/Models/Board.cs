@@ -104,12 +104,12 @@ public sealed class Board
     /// </summary>
     public void RecalculateAllCandidates()
     {
-        for (int i = 0; i < SudokuTopology.TotalCells; i++)
+        for (var i = 0; i < SudokuTopology.TotalCells; i++)
         {
             _candidates[i] = _values[i] == 0 ? CandidateMask.All : CandidateMask.Empty;
         }
 
-        for (int i = 0; i < SudokuTopology.TotalCells; i++)
+        for (var i = 0; i < SudokuTopology.TotalCells; i++)
         {
             int val = _values[i];
             if (val != 0)
@@ -159,7 +159,7 @@ public sealed class Board
 
     private bool HasDuplicates(int[] cellIndices)
     {
-        int seen = 0;
+        var seen = 0;
 
         foreach (int cellIndex in cellIndices)
         {
@@ -187,7 +187,7 @@ public sealed class Board
     /// </summary>
     public bool IsSolved()
     {
-        for (int i = 0; i < SudokuTopology.TotalCells; i++)
+        for (var i = 0; i < SudokuTopology.TotalCells; i++)
         {
             if (_values[i] == 0)
             {
@@ -204,8 +204,8 @@ public sealed class Board
     {
         get
         {
-            int count = 0;
-            for (int i = 0; i < SudokuTopology.TotalCells; i++)
+            var count = 0;
+            for (var i = 0; i < SudokuTopology.TotalCells; i++)
             {
                 if (_values[i] != 0)
                 {
@@ -244,7 +244,7 @@ public sealed class Board
         }
 
         var board = new Board();
-        for (int i = 0; i < SudokuTopology.TotalCells; i++)
+        for (var i = 0; i < SudokuTopology.TotalCells; i++)
         {
             char c = cleaned[i];
             if (c is '0' or '.')
@@ -287,7 +287,7 @@ public sealed class Board
     public string ToCanonicalString(char emptyChar = '.')
     {
         Span<char> buffer = stackalloc char[SudokuTopology.TotalCells];
-        for (int i = 0; i < SudokuTopology.TotalCells; i++)
+        for (var i = 0; i < SudokuTopology.TotalCells; i++)
         {
             buffer[i] = _values[i] == 0 ? emptyChar : (char)('0' + _values[i]);
         }

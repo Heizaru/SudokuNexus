@@ -75,7 +75,7 @@ public sealed class PuzzleGenerator
         Board working = solvedBoard.Clone();
 
         Span<int> pairIndices = stackalloc int[41];
-        for (int i = 0; i <= 40; i++)
+        for (var i = 0; i <= 40; i++)
         {
             pairIndices[i] = i;
         }
@@ -127,7 +127,7 @@ public sealed class PuzzleGenerator
         {
             random.Shuffle(digits);
             int[] boxCells = SudokuTopology.BoxIndices[boxIndex];
-            for (int i = 0; i < 9; i++)
+            for (var i = 0; i < 9; i++)
             {
                 board.PlaceDigit(boxCells[i], digits[i], isInitialClue: true);
             }

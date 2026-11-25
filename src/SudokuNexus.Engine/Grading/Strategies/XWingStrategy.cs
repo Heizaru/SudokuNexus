@@ -20,7 +20,7 @@ public sealed class XWingStrategy : IDeductionStrategy
 
     public SolveStep? FindNextStep(Board board)
     {
-        for (int digit = 1; digit <= 9; digit++)
+        for (var digit = 1; digit <= 9; digit++)
         {
             // 1. Row-based X-Wing:
             // Two rows (r1, r2) where digit appears in the exact same two columns (c1, c2).
@@ -40,10 +40,10 @@ public sealed class XWingStrategy : IDeductionStrategy
     {
         Span<ushort> colMasks = stackalloc ushort[9];
 
-        for (int r = 0; r < 9; r++)
+        for (var r = 0; r < 9; r++)
         {
             ushort mask = 0;
-            for (int c = 0; c < 9; c++)
+            for (var c = 0; c < 9; c++)
             {
                 int cell = r * 9 + c;
                 if (board.GetValue(cell) == 0 && board.GetCandidates(cell).HasCandidate(digit))
@@ -54,7 +54,7 @@ public sealed class XWingStrategy : IDeductionStrategy
             colMasks[r] = mask;
         }
 
-        for (int r1 = 0; r1 < 8; r1++)
+        for (var r1 = 0; r1 < 8; r1++)
         {
             ushort mask = colMasks[r1];
             if (BitOperations.PopCount(mask) != 2) continue;
@@ -69,7 +69,7 @@ public sealed class XWingStrategy : IDeductionStrategy
 
                 // Eliminate digit from all other rows in columns c1 and c2
                 var eliminations = new List<CandidateElimination>();
-                for (int otherRow = 0; otherRow < 9; otherRow++)
+                for (var otherRow = 0; otherRow < 9; otherRow++)
                 {
                     if (otherRow == r1 || otherRow == r2) continue;
 
@@ -89,7 +89,7 @@ public sealed class XWingStrategy : IDeductionStrategy
                 if (eliminations.Count > 0)
                 {
                     int[] primaryCells = [r1 * 9 + c1, r1 * 9 + c2, r2 * 9 + c1, r2 * 9 + c2];
-                    string description =
+                    var description =
                         $"X-Wing on digit {digit} in Rows {r1 + 1} and {r2 + 1} across Columns {c1 + 1} and {c2 + 1} eliminates {digit} from {eliminations.Count} cell(s).";
 
                     return new SolveStep(
@@ -111,10 +111,10 @@ public sealed class XWingStrategy : IDeductionStrategy
     {
         Span<ushort> rowMasks = stackalloc ushort[9];
 
-        for (int c = 0; c < 9; c++)
+        for (var c = 0; c < 9; c++)
         {
             ushort mask = 0;
-            for (int r = 0; r < 9; r++)
+            for (var r = 0; r < 9; r++)
             {
                 int cell = r * 9 + c;
                 if (board.GetValue(cell) == 0 && board.GetCandidates(cell).HasCandidate(digit))
@@ -125,7 +125,7 @@ public sealed class XWingStrategy : IDeductionStrategy
             rowMasks[c] = mask;
         }
 
-        for (int c1 = 0; c1 < 8; c1++)
+        for (var c1 = 0; c1 < 8; c1++)
         {
             ushort mask = rowMasks[c1];
             if (BitOperations.PopCount(mask) != 2) continue;
@@ -140,7 +140,7 @@ public sealed class XWingStrategy : IDeductionStrategy
 
                 // Eliminate digit from all other columns in rows r1 and r2
                 var eliminations = new List<CandidateElimination>();
-                for (int otherCol = 0; otherCol < 9; otherCol++)
+                for (var otherCol = 0; otherCol < 9; otherCol++)
                 {
                     if (otherCol == c1 || otherCol == c2) continue;
 
@@ -160,7 +160,7 @@ public sealed class XWingStrategy : IDeductionStrategy
                 if (eliminations.Count > 0)
                 {
                     int[] primaryCells = [r1 * 9 + c1, r1 * 9 + c2, r2 * 9 + c1, r2 * 9 + c2];
-                    string description =
+                    var description =
                         $"X-Wing on digit {digit} in Columns {c1 + 1} and {c2 + 1} across Rows {r1 + 1} and {r2 + 1} eliminates {digit} from {eliminations.Count} cell(s).";
 
                     return new SolveStep(

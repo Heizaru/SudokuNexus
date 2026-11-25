@@ -225,7 +225,7 @@ public sealed class PuzzleApplicationService
     public static BoardStateDto MapToBoardStateDto(Board board)
     {
         var cells = new List<CellStateDto>(SudokuTopology.TotalCells);
-        for (int i = 0; i < SudokuTopology.TotalCells; i++)
+        for (var i = 0; i < SudokuTopology.TotalCells; i++)
         {
             var coord = new CellCoordinate(i);
             int val = board.GetValue(i);

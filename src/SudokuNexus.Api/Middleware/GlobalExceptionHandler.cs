@@ -6,7 +6,9 @@ namespace SudokuNexus.Api.Middleware;
 /// <summary>
 /// Translates unhandled exceptions into <see cref="ProblemDetails"/> JSON responses.
 /// </summary>
-public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
+public sealed class GlobalExceptionHandler(
+    ILogger<GlobalExceptionHandler> logger,
+    IHostEnvironment environment) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(
         HttpContext httpContext,
@@ -19,7 +21,9 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
         {
             Status = StatusCodes.Status500InternalServerError,
             Title = "Internal Server Error",
-            Detail = exception.Message
+            Detail = environment.IsDevelopment()
+                ? exception.Message
+                : "An unexpected error occurred."
         };
 
         httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;

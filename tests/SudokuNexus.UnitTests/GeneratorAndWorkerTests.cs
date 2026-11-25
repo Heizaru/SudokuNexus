@@ -37,7 +37,7 @@ public sealed class GeneratorAndWorkerTests
         Assert.True(puzzleBoard.IsValid());
         Assert.Equal(1, DlxSolver.CountSolutions(puzzleBoard, limit: 2));
 
-        for (int i = 0; i < 81; i++)
+        for (var i = 0; i < 81; i++)
         {
             bool hasClueA = puzzleBoard.GetValue(i) != 0;
             bool hasClueB = puzzleBoard.GetValue(80 - i) != 0;
@@ -97,7 +97,7 @@ public sealed class GeneratorAndWorkerTests
             provider.GetRequiredService<IServiceScopeFactory>(),
             NullLogger<PuzzlePoolBackgroundWorker>.Instance);
 
-        for (int i = 0; i < PuzzlePoolBackgroundWorker.TargetPoolSizePerDifficulty; i++)
+        for (var i = 0; i < PuzzlePoolBackgroundWorker.TargetPoolSizePerDifficulty; i++)
         {
             Assert.True(await worker.ProcessGenerationRequestAsync(DifficultyRating.Easy));
         }

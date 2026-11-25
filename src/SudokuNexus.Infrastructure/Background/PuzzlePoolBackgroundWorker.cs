@@ -51,7 +51,7 @@ public sealed class PuzzlePoolBackgroundWorker(
         CancellationToken cancellationToken = default)
     {
         await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
-        IPuzzleRepository repo = scope.ServiceProvider.GetRequiredService<IPuzzleRepository>();
+        var repo = scope.ServiceProvider.GetRequiredService<IPuzzleRepository>();
 
         int currentCount = await repo.CountByDifficultyAsync(targetDifficulty, cancellationToken);
         if (currentCount >= TargetPoolSizePerDifficulty)

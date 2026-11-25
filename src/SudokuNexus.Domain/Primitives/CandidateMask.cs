@@ -99,7 +99,7 @@ public readonly record struct CandidateMask(ushort Bits)
     public IReadOnlyList<int> ToDigits()
     {
         var list = new List<int>(9);
-        for (int d = 1; d <= 9; d++)
+        for (var d = 1; d <= 9; d++)
         {
             if ((Bits & (1 << d)) != 0)
             {

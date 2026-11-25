@@ -13,7 +13,7 @@ public sealed class BitmaskAndBoardTests
         CandidateMask all = CandidateMask.All;
         Assert.Equal(9, all.Count);
 
-        for (int d = 1; d <= 9; d++)
+        for (var d = 1; d <= 9; d++)
         {
             Assert.True(all.HasCandidate(d));
         }
@@ -85,7 +85,7 @@ public sealed class BitmaskAndBoardTests
     public void Board_IsValid_ReturnsFalseWhenEmptyCellHasZeroCandidates()
     {
         var board = new Board();
-        for (int d = 1; d <= 9; d++)
+        for (var d = 1; d <= 9; d++)
         {
             board.EliminateCandidate(0, d);
         }

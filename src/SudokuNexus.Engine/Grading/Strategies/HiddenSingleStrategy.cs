@@ -19,13 +19,13 @@ public sealed class HiddenSingleStrategy : IDeductionStrategy
     {
         foreach (HouseType houseType in HouseOrder)
         {
-            for (int houseIndex = 0; houseIndex < SudokuTopology.GridSize; houseIndex++)
+            for (var houseIndex = 0; houseIndex < SudokuTopology.GridSize; houseIndex++)
             {
                 ReadOnlySpan<int> houseCells = SudokuTopology.GetHouseCells(houseType, houseIndex);
 
-                for (int digit = 1; digit <= 9; digit++)
+                for (var digit = 1; digit <= 9; digit++)
                 {
-                    int count = 0;
+                    var count = 0;
                     int targetCell = -1;
 
                     foreach (int cellIndex in houseCells)
@@ -41,19 +41,17 @@ public sealed class HiddenSingleStrategy : IDeductionStrategy
                         }
                     }
 
-                    if (count == 1)
-                    {
-                        string description =
-                            $"Hidden Single: Digit {digit} can only go in {new CellCoordinate(targetCell)} within {houseType} {houseIndex + 1}";
-                        return new SolveStep(
-                            Technique,
-                            DifficultyWeight,
-                            description,
-                            PrimaryCells: [targetCell],
-                            PlacedCellIndex: targetCell,
-                            PlacedDigit: digit,
-                            Eliminations: []);
-                    }
+                    if (count != 1) continue;
+                    var description =
+                        $"Hidden Single: Digit {digit} can only go in {new CellCoordinate(targetCell)} within {houseType} {houseIndex + 1}";
+                    return new SolveStep(
+                        Technique,
+                        DifficultyWeight,
+                        description,
+                        PrimaryCells: [targetCell],
+                        PlacedCellIndex: targetCell,
+                        PlacedDigit: digit,
+                        Eliminations: []);
                 }
             }
         }

@@ -38,16 +38,16 @@ public static class SudokuTopology
 
     static SudokuTopology()
     {
-        for (int i = 0; i < GridSize; i++)
+        for (var i = 0; i < GridSize; i++)
         {
             RowIndices[i] = new int[GridSize];
             ColumnIndices[i] = new int[GridSize];
             BoxIndices[i] = new int[GridSize];
         }
 
-        for (int r = 0; r < GridSize; r++)
+        for (var r = 0; r < GridSize; r++)
         {
-            for (int c = 0; c < GridSize; c++)
+            for (var c = 0; c < GridSize; c++)
             {
                 int idx = r * GridSize + c;
                 RowIndices[r][c] = idx;
@@ -59,7 +59,7 @@ public static class SudokuTopology
             }
         }
 
-        for (int idx = 0; idx < TotalCells; idx++)
+        for (var idx = 0; idx < TotalCells; idx++)
         {
             int r = idx / GridSize;
             int c = idx % GridSize;

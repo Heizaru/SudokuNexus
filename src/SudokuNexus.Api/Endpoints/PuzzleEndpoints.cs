@@ -10,14 +10,14 @@ namespace SudokuNexus.Api.Endpoints;
 
 public static class PuzzleEndpoints
 {
-    public static IEndpointRouteBuilder MapPuzzleEndpoints(this IEndpointRouteBuilder app)
+    public static void MapPuzzleEndpoints(this IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app.MapGroup("/api/puzzles")
             .WithTags("Sudoku Engine & Grader");
 
         group.MapGet("/presets", () => TypedResults.Ok(PuzzleApplicationService.GetCuratedPresets()))
             .WithName("GetCuratedPresets")
-            .WithSummary("Returns curated test boards (Singles, Pairs, X-Wing, AI Escargot).");
+            .WithSummary("Returns test boards (Singles, Pairs, X-Wing, AI Escargot).");
 
         group.MapPost("/inspect", ([FromBody] BoardRequest request, PuzzleApplicationService service) =>
             ToHttpResult(service.ParseAndInspect(request)))
@@ -59,8 +59,6 @@ public static class PuzzleEndpoints
         })
         .WithName("GetPoolStatistics")
         .WithSummary("Returns the count of pre-generated puzzles in the SQLite pool per difficulty rating.");
-
-        return app;
     }
 
     private static Results<Ok<T>, ProblemHttpResult> ToHttpResult<T>(Result<T> result)

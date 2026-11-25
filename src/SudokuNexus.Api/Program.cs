@@ -10,13 +10,13 @@ builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
-builder.Services.AddSudokuApplication();
-builder.Services.AddSudokuInfrastructure(
-    builder.Configuration.GetConnectionString("SudokuDb") ?? "Data Source=sudokunexus.db");
+builder.Services
+    .AddSudokuApplication()
+    .AddSudokuInfrastructure(
+        builder.Configuration.GetConnectionString("SudokuDb") ?? "Data Source=sudokunexus.db");
 
 WebApplication app = builder.Build();
 
-// Ensure SQLite database schema is created on startup
 using (IServiceScope scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<SudokuDbContext>();

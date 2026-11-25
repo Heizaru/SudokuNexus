@@ -12,7 +12,7 @@ public sealed class LogicalStrategiesTests
     public void NakedSingleStrategy_DetectsCellWithOnlyOneCandidate()
     {
         var board = new Board();
-        for (int c = 0; c < 8; c++)
+        for (var c = 0; c < 8; c++)
         {
             board.PlaceDigit(c, c + 1, isInitialClue: true);
         }
@@ -50,7 +50,7 @@ public sealed class LogicalStrategiesTests
     {
         var board = new Board();
         int[] box8Cells = SudokuTopology.BoxIndices[8];
-        for (int i = 0; i < 8; i++)
+        for (var i = 0; i < 8; i++)
         {
             board.EliminateCandidate(box8Cells[i], 9);
         }
@@ -68,7 +68,7 @@ public sealed class LogicalStrategiesTests
     public void NakedPairStrategy_EliminatesPairDigitsFromOtherCellsInRow()
     {
         var board = new Board();
-        for (int d = 1; d <= 9; d++)
+        for (var d = 1; d <= 9; d++)
         {
             if (d is not 4 and not 7)
             {
@@ -95,7 +95,7 @@ public sealed class LogicalStrategiesTests
 
         foreach (int r in new[] { 1, 4 })
         {
-            for (int c = 0; c < 9; c++)
+            for (var c = 0; c < 9; c++)
             {
                 if (c is not 2 and not 6)
                 {
